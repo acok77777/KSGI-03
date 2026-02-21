@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3월 나의 행복 도전 🌸</title>
+
+<style>
+body{
+  font-family: sans-serif;
+  background:#fffafc;
+  margin:0;
+  padding:20px;
+  text-align:center;
+}
+h1{
+  color:#ff6f91;
+}
+.card{
+  background:white;
+  border-radius:20px;
+  padding:20px;
+  margin-top:20px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+button{
+  display:block;
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:none;
+  border-radius:12px;
+  background:#ffe3ec;
+  font-size:16px;
+}
+button:hover{
+  background:#ffccd5;
+}
+.hidden{
+  display:none;
+}
+textarea{
+  width:100%;
+  border-radius:10px;
+  padding:10px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌸 3월 나의 행복 도전</h1>
+
+<div class="card" id="step1">
+  <h3>지금 나의 상태는?</h3>
+  <button onclick="nextStep()">😴 많이 지쳐있어요</button>
+  <button onclick="nextStep()">😐 무난해요</button>
+  <button onclick="nextStep()">🌱 변화를 주고 싶어요</button>
+  <button onclick="nextStep()">🔥 시작하고 싶어요</button>
+</div>
+
+<div class="card hidden" id="step2">
+  <h3>카테고리를 선택해주세요</h3>
+  <button onclick="showChallenge('건강')">🏃 건강</button>
+  <button onclick="showChallenge('신심')">🙏 신심</button>
+  <button onclick="showChallenge('공부')">📚 공부</button>
+  <button onclick="showChallenge('재정')">💰 재정</button>
+  <button onclick="showChallenge('마음')">🧠 마음</button>
+  <button onclick="showChallenge('관계')">👥 관계</button>
+  <button onclick="showChallenge('자기계발')">🎨 자기계발</button>
+</div>
+
+<div class="card hidden" id="step3">
+  <h3 id="challengeTitle"></h3>
+  <p>👉 나의 도전은?</p>
+  <textarea rows="2" placeholder="예: 매일 10분 걷기"></textarea>
+
+  <p>👉 어떻게 실천할까요?</p>
+  <textarea rows="3" placeholder="예: 아침에 일어나서 집 앞 산책"></textarea>
+</div>
+
+<script>
+function nextStep(){
+  document.getElementById('step1').classList.add('hidden');
+  document.getElementById('step2').classList.remove('hidden');
+}
+
+function showChallenge(category){
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('step3').classList.remove('hidden');
+  document.getElementById('challengeTitle').innerText = "선택한 카테고리: " + category;
+}
+</script>
+
+</body>
+</html>
