@@ -3,143 +3,224 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🎡 룰렛</title>
+<title>우리 가족 시상식</title>
 
 <style>
-body {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  background:#f5f5f5;
-  font-family:sans-serif;
-}
-
-.container {
+body{
+  margin:0;
+  font-family: Arial;
   text-align:center;
+  background: linear-gradient(135deg,#ffe5ec,#e0f7fa,#fff1e6,#e5ffe5);
 }
 
-#wheel {
-  width:300px;
-  height:300px;
-  border-radius:50%;
-  border:8px solid #333;
-  position:relative;
-  overflow:hidden;
-  transition: transform 4s cubic-bezier(.17,.67,.83,.67);
-}
-
-/* 조각 */
-.slice {
-  position:absolute;
-  width:50%;
-  height:50%;
-  top:50%;
-  left:50%;
-  transform-origin:0% 0%;
-}
-
-/* 글씨 */
-.label {
-  position:absolute;
-  left:85%; /* 👉 바깥쪽으로 이동 */
-  top:50%;
-  transform: rotate(90deg);
-  transform-origin:left center;
-  font-size:14px;
-  font-weight:bold;
-}
+h1{ margin-top:20px; }
 
 /* 화살표 */
-.pointer {
-  position:absolute;
-  top:-20px;
-  left:50%;
-  transform:translateX(-50%);
-  width:0;
-  height:0;
-  border-left:10px solid transparent;
-  border-right:10px solid transparent;
-  border-bottom:20px solid red;
+.pointer{
+  width:0;height:0;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:28px solid #ff4d6d;
+  margin:10px auto;
 }
 
-button {
-  margin-top:20px;
-  padding:10px 20px;
-  font-size:16px;
+/* 룰렛 */
+.container{
+  position:relative;
+  width:360px;
+  height:360px;
+  margin:20px auto;
+}
+
+canvas{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+}
+
+/* 버튼 */
+button{
+  padding:12px 18px;
+  margin:6px;
+  border:none;
+  border-radius:12px;
+  background:#ff6b81;
+  color:#fff;
+  cursor:pointer;
+}
+button:hover{ background:#ff4757; }
+
+/* 팝업 */
+.popup{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.4);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-box{
+  background:white;
+  padding:25px;
+  border-radius:20px;
+  width:260px;
+  position:relative;
+}
+
+.close{
+  position:absolute;
+  right:10px;
+  top:5px;
+  cursor:pointer;
+  font-size:18px;
 }
 </style>
 </head>
 
 <body>
+
+<h1>🌷 우리 가족 시상식 🌷</h1>
+
+<div class="pointer"></div>
+
 <div class="container">
-  <div class="pointer"></div>
-  <div id="wheel"></div>
-  <button onclick="spin()">돌리기</button>
-  <p id="result"></p>
+  <canvas id="wheel" width="360" height="360"></canvas>
+</div>
+
+<button onclick="startSpin()">시작</button>
+<button onclick="stopSpin()">멈춤</button>
+<button onclick="showResult()">내용</button>
+
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <div class="close" onclick="closePopup()">✖</div>
+    <h2 id="title"></h2>
+    <p id="desc"></p>
+  </div>
 </div>
 
 <script>
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+
 const items = [
-  "치킨","피자","떡볶이","라면","초밥",
-  "햄버거","샐러드","파스타","김밥","돈까스"
+"상상이상","언제나 웃상","24시간 방송 상","든든한 버팀목상",
+"고마워서 눈물상","사랑 듬뿍상","우리집 햇살상",
+"말없이 지켜준 상","다시 태어나도 상","무한 방패상"
 ];
 
-let remaining = [...items]; // 👉 중복 방지 배열
+const desc = {
+"상상이상":"남들과 다른 재능과 기발한 생각으로 가족을 놀라게 하는 사람에게 드리는 상",
+"언제나 웃상":"언제 어디서나 밝은 웃음으로 가족의 분위기를 따뜻하게 만드는 사람에게 드리는 상",
+"24시간 방송 상":"끊임없는 이야기와 수다로 집안을 활기차게 만드는 사람에게 드리는 상",
+"든든한 버팀목상":"힘들 때 항상 옆에서 지켜주고 가족의 중심이 되어주는 사람에게 드리는 상",
+"고마워서 눈물상":"평소엔 표현 못 했지만 가장 고맙고 가장 소중한 사람에게 드리는 상",
+"사랑 듬뿍상":"표현은 서툴러도 누구보다 가족을 깊이 사랑하는 마음을 가진 사람에게 드리는 상",
+"우리집 햇살상":"존재만으로도 가족의 하루를 밝게 만들어주는 사람에게 드리는 상",
+"말없이 지켜준 상":"티내지 않지만 항상 뒤에서 가족을 지켜준 사람에게 드리는 상",
+"다시 태어나도 상":"다시 태어나도 꼭 우리 가족으로 만나고 싶은 사람에게 드리는 상",
+"무한 방패상":"어떤 상황에서도 가족을 먼저 지켜주는 분께 드리는 상"
+};
 
-const wheel = document.getElementById("wheel");
-const result = document.getElementById("result");
+const colors = ["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff","#ffc6ff","#fffffc","#d8f3dc"];
 
-const sliceAngle = 360 / items.length;
+let angle=0;
+let spinning=false;
+let speed=0;
+let resultIndex=null;
 
-/* 룰렛 만들기 */
-items.forEach((item, i) => {
-  const slice = document.createElement("div");
-  slice.className = "slice";
+/* ✅ 중복 방지 */
+let history = [];
 
-  const angle = sliceAngle * i;
-  slice.style.transform = `rotate(${angle}deg) skewY(${90 - sliceAngle}deg)`;
-  slice.style.background = i % 2 === 0 ? "#ffd966" : "#f4b183";
+const center=180;
+const radius=160;
 
-  const label = document.createElement("div");
-  label.className = "label";
-  label.innerText = item;
+/* 룰렛 그리기 */
+function draw(){
+  const arc = (2*Math.PI)/items.length;
+  ctx.clearRect(0,0,360,360);
 
-  slice.appendChild(label);
-  wheel.appendChild(slice);
-});
+  for(let i=0;i<items.length;i++){
+    const start = angle + i*arc;
 
-let currentRotation = 0;
+    ctx.beginPath();
+    ctx.moveTo(center,center);
+    ctx.arc(center,center,radius,start,start+arc);
+    ctx.fillStyle = colors[i];
+    ctx.fill();
 
-function spin() {
-  if (remaining.length === 0) {
-    result.innerText = "🎉 10개 모두 완료!";
-    return;
+    /* ✅ 글씨 바깥쪽 */
+    ctx.save();
+    ctx.translate(center,center);
+    ctx.rotate(start + arc/2);
+    ctx.fillStyle="#333";
+    ctx.font="bold 13px Arial";
+    ctx.textAlign="center";
+    ctx.fillText(items[i],130,5); // 🔥 여기 수정
+    ctx.restore();
+  }
+}
+
+/* 애니메이션 */
+function animate(){
+  if(spinning){
+    angle+=speed;
+    draw();
+    requestAnimationFrame(animate);
+  }
+}
+
+function startSpin(){
+  spinning=true;
+  speed=0.35;
+  resultIndex=null;
+  animate();
+}
+
+/* 🎯 중복 없이 멈춤 + 정확 정렬 */
+function stopSpin(){
+  spinning=false;
+
+  const arc=(2*Math.PI)/items.length;
+
+  let available = items.map((_,i)=>i).filter(i=>!history.includes(i));
+
+  if(available.length===0){
+    history=[]; // 10개 다 쓰면 초기화
+    available = items.map((_,i)=>i);
   }
 
-  // 👉 남은 것 중 랜덤 선택
-  const randomIndex = Math.floor(Math.random() * remaining.length);
-  const selected = remaining[randomIndex];
+  const index = available[Math.floor(Math.random()*available.length)];
+  history.push(index);
 
-  // 👉 실제 index 찾기
-  const realIndex = items.indexOf(selected);
+  resultIndex=index;
 
-  // 👉 각도 계산 (화살표 위치 맞추기)
-  const targetAngle = 360 - (realIndex * sliceAngle + sliceAngle / 2);
+  // 👉 정확히 화살표에 맞게 정렬
+  angle = (Math.PI * 1.5) - (index * arc) - (arc / 2);
 
-  const extraSpin = 360 * 5; // 많이 돌기
-  const finalAngle = currentRotation + extraSpin + targetAngle;
-
-  wheel.style.transform = `rotate(${finalAngle}deg)`;
-
-  currentRotation = finalAngle % 360;
-
-  // 👉 결과 출력 + 제거
-  setTimeout(() => {
-    result.innerText = `결과: ${selected}`;
-    remaining.splice(randomIndex, 1); // 중복 제거
-  }, 4000);
+  draw();
 }
+
+/* 팝업 */
+function showResult(){
+  if(resultIndex===null) return;
+
+  const name = items[resultIndex];
+
+  document.getElementById("title").innerText=name;
+  document.getElementById("desc").innerText=desc[name];
+
+  document.getElementById("popup").style.display="flex";
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display="none";
+}
+
+draw();
 </script>
+
 </body>
 </html>
