@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html> 
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -106,22 +106,22 @@ const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
 
 const items = [
-"상상이상","언제나 웃상","24시간 방송 상","든든한 버팀목상",
-"고마워서 눈물상","사랑 듬뿍상","우리집 햇살상",
-"말없이 지켜준 상","다시 태어나도 상","무한 방패상"
+"상상이 상","웃 상","방송 상","버팀목 상", 
+"눈물 상","사랑 상","햇살상", 
+"묵묵 상","환생 상","방패 상" 
 ];
 
 const desc = {
-"상상이상":"남들과 다른 재능과 기발한 생각으로 가족을 놀라게 하는 사람에게 드리는 상",
-"언제나 웃상":"언제 어디서나 밝은 웃음으로 가족의 분위기를 따뜻하게 만드는 사람에게 드리는 상",
-"24시간 방송 상":"끊임없는 이야기와 수다로 집안을 활기차게 만드는 사람에게 드리는 상",
-"든든한 버팀목상":"힘들 때 항상 옆에서 지켜주고 가족의 중심이 되어주는 사람에게 드리는 상",
-"고마워서 눈물상":"평소엔 표현 못 했지만 가장 고맙고 가장 소중한 사람에게 드리는 상",
-"사랑 듬뿍상":"표현은 서툴러도 누구보다 가족을 깊이 사랑하는 마음을 가진 사람에게 드리는 상",
-"우리집 햇살상":"존재만으로도 가족의 하루를 밝게 만들어주는 사람에게 드리는 상",
-"말없이 지켜준 상":"티내지 않지만 항상 뒤에서 가족을 지켜준 사람에게 드리는 상",
-"다시 태어나도 상":"다시 태어나도 꼭 우리 가족으로 만나고 싶은 사람에게 드리는 상",
-"무한 방패상":"어떤 상황에서도 가족을 먼저 지켜주는 분께 드리는 상"
+"상상이 상":"남들과 다른 재능과 기발한 생각으로 가족을 놀라게 하는 사람에게 드리는 상",
+"웃 상":"언제 어디서나 밝은 웃음으로 가족의 분위기를 따뜻하게 만드는 사람에게 드리는 상",
+"방송 상":"끊임없는 이야기와 수다로 집안을 활기차게 만드는 사람에게 드리는 상",
+"버팀목 상":"힘들 때 항상 옆에서 지켜주고 가족의 중심이 되어주는 사람에게 드리는 상",
+"눈물 상":"평소엔 표현 못 했지만 가장 고맙고 가장 소중한 사람에게 드리는 상",
+"사랑 상":"표현은 서툴러도 누구보다 가족을 깊이 사랑하는 마음을 가진 사람에게 드리는 상",
+"햇살상":"존재만으로도 가족의 하루를 밝게 만들어주는 사람에게 드리는 상",
+"묵묵 상":"티내지 않지만 항상 뒤에서 가족을 지켜준 사람에게 드리는 상",
+"환생 상":"다시 태어나도 꼭 우리 가족으로 만나고 싶은 사람에게 드리는 상",
+"방패 상":"어떤 상황에서도 가족을 먼저 지켜주는 분께 드리는 상"
 };
 
 const colors = ["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff","#ffc6ff","#fffffc","#d8f3dc"];
@@ -131,8 +131,10 @@ let spinning=false;
 let speed=0;
 let resultIndex=null;
 
-/* 🔥 중복 방지용 */
 let history = [];
+
+let targetAngle = null;
+let decelerating = false;
 
 const center=180;
 const radius=160;
@@ -156,9 +158,9 @@ function draw(){
     ctx.translate(center,center);
     ctx.rotate(start + arc/2);
     ctx.fillStyle="#333";
-    ctx.font="bold 13px Arial";
+    ctx.font="bold 20px Arial"; // 👉 글씨 크기 20px
     ctx.textAlign="center";
-    ctx.fillText(items[i],70,5); // 👉 안쪽으로 이동
+    ctx.fillText(items[i],80,5);
     ctx.restore();
   }
 }
@@ -166,40 +168,51 @@ function draw(){
 /* 애니메이션 */
 function animate(){
   if(spinning){
-    angle+=speed;
+    angle += speed;
+
+    if(decelerating){
+      speed *= 0.97;
+
+      if(speed < 0.002){
+        spinning = false;
+        decelerating = false;
+        angle = targetAngle;
+      }
+    }
+
     draw();
     requestAnimationFrame(animate);
   }
 }
 
 function startSpin(){
-  spinning=true;
-  speed=0.35;
-  resultIndex=null;
+  spinning = true;
+  decelerating = false;
+  speed = 0.35;
+  targetAngle = null;
   animate();
 }
 
-/* 🎯 중복 없이 멈춤 */
 function stopSpin(){
-  spinning=false;
+  if(!spinning) return;
 
-  const arc=(2*Math.PI)/items.length;
+  const arc = (2*Math.PI)/items.length;
 
   let available = items.map((_,i)=>i).filter(i=>!history.includes(i));
 
-  if(available.length===0){
-    history=[]; // 10번 다 돌면 초기화
+  if(available.length === 0){
+    history = [];
     available = items.map((_,i)=>i);
   }
 
   const index = available[Math.floor(Math.random()*available.length)];
   history.push(index);
 
-  resultIndex=index;
+  resultIndex = index;
 
-  angle = (Math.PI*1.5) - (index*arc) - (arc/2);
+  targetAngle = (Math.PI*1.5) - (index*arc) - (arc/2);
 
-  draw();
+  decelerating = true;
 }
 
 /* 팝업 */
