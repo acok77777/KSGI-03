@@ -36,10 +36,6 @@ canvas{
   width:100%;
   height:100%;
   border-radius:50%;
-  box-shadow: 
-    0 10px 25px rgba(0,0,0,0.25),   /* 바깥 그림자 */
-    inset 0 4px 10px rgba(255,255,255,0.6), /* 위쪽 빛 */
-    inset 0 -6px 15px rgba(0,0,0,0.2); /* 아래 그림자 */
 }
 
 /* 버튼 */
@@ -135,39 +131,13 @@ let spinning=false;
 let speed=0;
 let resultIndex=null;
 
+/* 🔥 중복 방지용 */
 let history = [];
 
 const center=180;
 const radius=160;
 
-/* 줄바꿈 */
-function drawText(text, x, y){
-  const maxWidth = 95;
-  const lineHeight = 20;
-
-  let words = text.split(" ");
-  let line = "";
-  let lines = [];
-
-  for(let i=0;i<words.length;i++){
-    let testLine = line + words[i] + " ";
-    let testWidth = ctx.measureText(testLine).width;
-
-    if(testWidth > maxWidth && i > 0){
-      lines.push(line);
-      line = words[i] + " ";
-    }else{
-      line = testLine;
-    }
-  }
-  lines.push(line);
-
-  for(let i=0;i<lines.length;i++){
-    ctx.fillText(lines[i], x, y + (i*lineHeight));
-  }
-}
-
-/* 룰렛 */
+/* 룰렛 그리기 */
 function draw(){
   const arc = (2*Math.PI)/items.length;
   ctx.clearRect(0,0,360,360);
@@ -178,30 +148,22 @@ function draw(){
     ctx.beginPath();
     ctx.moveTo(center,center);
     ctx.arc(center,center,radius,start,start+arc);
-
-    /* 🎨 입체 그라데이션 */
-    let grad = ctx.createLinearGradient(0,0,360,360);
-    grad.addColorStop(0, colors[i]);
-    grad.addColorStop(1, "#ffffff");
-
-    ctx.fillStyle = grad;
+    ctx.fillStyle = colors[i];
     ctx.fill();
 
+    /* 텍스트 */
     ctx.save();
     ctx.translate(center,center);
     ctx.rotate(start + arc/2);
-
-    ctx.fillStyle="#222";
-    ctx.font="bold 19px Arial";  // 🔥 여기 변경됨
+    ctx.fillStyle="#333";
+    ctx.font="bold 13px Arial";
     ctx.textAlign="center";
-
-    drawText(items[i], 85, 0);
-
+    ctx.fillText(items[i],70,5); // 👉 안쪽으로 이동
     ctx.restore();
   }
 }
 
-/* 애니 */
+/* 애니메이션 */
 function animate(){
   if(spinning){
     angle+=speed;
@@ -217,6 +179,7 @@ function startSpin(){
   animate();
 }
 
+/* 🎯 중복 없이 멈춤 */
 function stopSpin(){
   spinning=false;
 
@@ -225,7 +188,7 @@ function stopSpin(){
   let available = items.map((_,i)=>i).filter(i=>!history.includes(i));
 
   if(available.length===0){
-    history=[];
+    history=[]; // 10번 다 돌면 초기화
     available = items.map((_,i)=>i);
   }
 
@@ -239,6 +202,7 @@ function stopSpin(){
   draw();
 }
 
+/* 팝업 */
 function showResult(){
   if(resultIndex===null) return;
 
