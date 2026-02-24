@@ -15,7 +15,7 @@ body{
 
 h1{ margin-top:20px; }
 
-/* 🔻 화살표 */
+/* 화살표 */
 .pointer{
   width:0;height:0;
   border-left:18px solid transparent;
@@ -36,7 +36,6 @@ canvas{
   width:100%;
   height:100%;
   border-radius:50%;
-  box-shadow:0 0 15px rgba(0,0,0,0.2);
 }
 
 /* 버튼 */
@@ -70,7 +69,6 @@ button:hover{ background:#ff4757; }
   position:relative;
 }
 
-/* ❌ 닫기 */
 .close{
   position:absolute;
   right:10px;
@@ -95,7 +93,6 @@ button:hover{ background:#ff4757; }
 <button onclick="stopSpin()">멈춤</button>
 <button onclick="showResult()">내용</button>
 
-<!-- 팝업 -->
 <div class="popup" id="popup">
   <div class="popup-box">
     <div class="close" onclick="closePopup()">✖</div>
@@ -134,10 +131,13 @@ let spinning=false;
 let speed=0;
 let resultIndex=null;
 
+/* 🔥 중복 방지용 */
+let history = [];
+
 const center=180;
 const radius=160;
 
-/* 🎯 원형 룰렛 */
+/* 룰렛 그리기 */
 function draw(){
   const arc = (2*Math.PI)/items.length;
   ctx.clearRect(0,0,360,360);
@@ -151,21 +151,19 @@ function draw(){
     ctx.fillStyle = colors[i];
     ctx.fill();
 
-    ctx.strokeStyle="#fff";
-    ctx.stroke();
-
     /* 텍스트 */
     ctx.save();
     ctx.translate(center,center);
     ctx.rotate(start + arc/2);
     ctx.fillStyle="#333";
-    ctx.font="bold 15px Arial";
-    ctx.fillText(items[i],90,5);
+    ctx.font="bold 13px Arial";
+    ctx.textAlign="center";
+    ctx.fillText(items[i],70,5); // 👉 안쪽으로 이동
     ctx.restore();
   }
 }
 
-/* 애니 */
+/* 애니메이션 */
 function animate(){
   if(spinning){
     angle+=speed;
@@ -181,12 +179,21 @@ function startSpin(){
   animate();
 }
 
-/* 🎯 중앙 정확 정렬 */
+/* 🎯 중복 없이 멈춤 */
 function stopSpin(){
   spinning=false;
 
   const arc=(2*Math.PI)/items.length;
-  const index=Math.floor(Math.random()*items.length);
+
+  let available = items.map((_,i)=>i).filter(i=>!history.includes(i));
+
+  if(available.length===0){
+    history=[]; // 10번 다 돌면 초기화
+    available = items.map((_,i)=>i);
+  }
+
+  const index = available[Math.floor(Math.random()*available.length)];
+  history.push(index);
 
   resultIndex=index;
 
