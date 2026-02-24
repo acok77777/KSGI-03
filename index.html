@@ -131,7 +131,6 @@ let spinning=false;
 let speed=0;
 let resultIndex=null;
 
-/* ✅ 중복 방지 */
 let history = [];
 
 const center=180;
@@ -151,14 +150,15 @@ function draw(){
     ctx.fillStyle = colors[i];
     ctx.fill();
 
-    /* ✅ 글씨 바깥쪽 */
+    /* ✅ 중앙 정렬 */
     ctx.save();
     ctx.translate(center,center);
     ctx.rotate(start + arc/2);
     ctx.fillStyle="#333";
     ctx.font="bold 13px Arial";
     ctx.textAlign="center";
-    ctx.fillText(items[i],130,5); // 🔥 여기 수정
+    ctx.textBaseline="middle";
+    ctx.fillText(items[i], radius * 0.55, 0);
     ctx.restore();
   }
 }
@@ -179,7 +179,6 @@ function startSpin(){
   animate();
 }
 
-/* 🎯 중복 없이 멈춤 + 정확 정렬 */
 function stopSpin(){
   spinning=false;
 
@@ -188,7 +187,7 @@ function stopSpin(){
   let available = items.map((_,i)=>i).filter(i=>!history.includes(i));
 
   if(available.length===0){
-    history=[]; // 10개 다 쓰면 초기화
+    history=[];
     available = items.map((_,i)=>i);
   }
 
@@ -197,13 +196,11 @@ function stopSpin(){
 
   resultIndex=index;
 
-  // 👉 정확히 화살표에 맞게 정렬
   angle = (Math.PI * 1.5) - (index * arc) - (arc / 2);
 
   draw();
 }
 
-/* 팝업 */
 function showResult(){
   if(resultIndex===null) return;
 
