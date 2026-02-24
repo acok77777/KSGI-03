@@ -1,86 +1,80 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>🌸 회전판 🌸</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>우리 가족 시상식</title>
 
 <style>
-body {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  height:100vh;
-  background:#fff7fb;
-  font-family:sans-serif;
-}
-
-/* 화살표 */
-.arrow {
-  font-size:30px;
-  margin-bottom:10px;
-}
-
-/* 회전판 */
-.wheel {
-  width:300px;
-  height:300px;
-  border-radius:50%;
-  position:relative;
-  overflow:hidden;
-  transform:rotate(0deg);
-  transition:transform 3s ease-out;
-}
-
-/* 칸 */
-.slice {
-  position:absolute;
-  width:50%;
-  height:50%;
-  top:50%;
-  left:50%;
-  transform-origin:0% 0%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
+body{
+  margin:0;
+  font-family: Arial;
   text-align:center;
-  padding:5px;
-  box-sizing:border-box;
+  background: linear-gradient(135deg,#ffe5ec,#e0f7fa,#fff1e6,#e5ffe5);
+}
+
+h1{ margin-top:20px; }
+
+/* 🔻 화살표 */
+.pointer{
+  width:0;height:0;
+  border-left:18px solid transparent;
+  border-right:18px solid transparent;
+  border-top:28px solid #ff4d6d;
+  margin:10px auto;
+}
+
+/* 룰렛 */
+.container{
+  position:relative;
+  width:360px;
+  height:360px;
+  margin:20px auto;
+}
+
+canvas{
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  box-shadow:0 0 15px rgba(0,0,0,0.2);
 }
 
 /* 버튼 */
-button {
-  margin-top:20px;
-  padding:10px 20px;
-  font-size:16px;
+button{
+  padding:12px 18px;
+  margin:6px;
   border:none;
-  border-radius:20px;
-  background:#ff9ecb;
-  color:white;
+  border-radius:12px;
+  background:#ff6b81;
+  color:#fff;
   cursor:pointer;
 }
+button:hover{ background:#ff4757; }
 
 /* 팝업 */
-.popup {
+.popup{
   position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%);
-  background:white;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 0 10px rgba(0,0,0,0.2);
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.4);
   display:none;
-  min-width:200px;
+  justify-content:center;
+  align-items:center;
 }
 
-/* 닫기 버튼 */
-.close {
+.popup-box{
+  background:white;
+  padding:25px;
+  border-radius:20px;
+  width:260px;
+  position:relative;
+}
+
+/* ❌ 닫기 */
+.close{
   position:absolute;
-  top:5px;
   right:10px;
+  top:5px;
   cursor:pointer;
   font-size:18px;
 }
@@ -89,70 +83,135 @@ button {
 
 <body>
 
-<div class="arrow">⬇️</div>
+<h1>🌷 우리 가족 시상식 🌷</h1>
 
-<div class="wheel" id="wheel"></div>
+<div class="pointer"></div>
 
-<button onclick="spin()">돌리기 🌸</button>
+<div class="container">
+  <canvas id="wheel" width="360" height="360"></canvas>
+</div>
 
+<button onclick="startSpin()">시작</button>
+<button onclick="stopSpin()">멈춤</button>
+<button onclick="showResult()">내용</button>
+
+<!-- 팝업 -->
 <div class="popup" id="popup">
-  <div class="close" onclick="closePopup()">✖</div>
-  <div id="result"></div>
+  <div class="popup-box">
+    <div class="close" onclick="closePopup()">✖</div>
+    <h2 id="title"></h2>
+    <p id="desc"></p>
+  </div>
 </div>
 
 <script>
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+
 const items = [
-  "건강 🍀", "행운 ✨", "돈 💰", "사랑 💖",
-  "성공 🚀", "휴식 😌", "기회 🌈", "기쁨 😊"
+"상상이상","언제나 웃상","24시간 방송 상","든든한 버팀목상",
+"고마워서 눈물상","사랑 듬뿍상","우리집 햇살상",
+"말없이 지켜준 상","다시 태어나도 가족 상","무한 방패상"
 ];
 
-const wheel = document.getElementById("wheel");
-const sliceAngle = 360 / items.length;
+const desc = {
+"상상이상":"남들과 다른 재능과 기발한 생각으로 가족을 놀라게 하는 사람에게 드리는 상",
+"언제나 웃상":"언제 어디서나 밝은 웃음으로 가족의 분위기를 따뜻하게 만드는 사람에게 드리는 상",
+"24시간 방송 상":"끊임없는 이야기와 수다로 집안을 활기차게 만드는 사람에게 드리는 상",
+"든든한 버팀목상":"힘들 때 항상 옆에서 지켜주고 가족의 중심이 되어주는 사람에게 드리는 상",
+"고마워서 눈물상":"평소엔 표현 못 했지만 가장 고맙고 가장 소중한 사람에게 드리는 상",
+"사랑 듬뿍상":"표현은 서툴러도 누구보다 가족을 깊이 사랑하는 마음을 가진 사람에게 드리는 상",
+"우리집 햇살상":"존재만으로도 가족의 하루를 밝게 만들어주는 사람에게 드리는 상",
+"말없이 지켜준 상":"티내지 않지만 항상 뒤에서 가족을 지켜준 사람에게 드리는 상",
+"다시 태어나도 가족 상":"다시 태어나도 꼭 우리 가족으로 만나고 싶은 사람에게 드리는 상",
+"무한 방패상":"어떤 상황에서도 가족을 먼저 지켜주는 분께 드리는 상"
+};
 
-/* 칸 생성 */
-items.forEach((text, i) => {
-  const div = document.createElement("div");
-  div.className = "slice";
+const colors = ["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff","#ffc6ff","#fffffc","#d8f3dc"];
 
-  div.style.transform = `
-    rotate(${i * sliceAngle}deg)
-    skewY(${90 - sliceAngle}deg)
-  `;
+let angle=0;
+let spinning=false;
+let speed=0;
+let resultIndex=null;
 
-  div.style.background = `hsl(${i * 40}, 80%, 85%)`;
+const center=180;
+const radius=160;
 
-  div.innerHTML = `<div style="transform: skewY(-${90 - sliceAngle}deg) rotate(${sliceAngle/2}deg);">
-    ${text}
-  </div>`;
+/* 🎯 원형 룰렛 */
+function draw(){
+  const arc = (2*Math.PI)/items.length;
+  ctx.clearRect(0,0,360,360);
 
-  wheel.appendChild(div);
-});
+  for(let i=0;i<items.length;i++){
+    const start = angle + i*arc;
 
-let currentRotation = 0;
+    ctx.beginPath();
+    ctx.moveTo(center,center);
+    ctx.arc(center,center,radius,start,start+arc);
+    ctx.fillStyle = colors[i];
+    ctx.fill();
 
-function spin() {
-  const randomIndex = Math.floor(Math.random() * items.length);
+    ctx.strokeStyle="#fff";
+    ctx.stroke();
 
-  const rotateTo =
-    360 * 5 + (360 - randomIndex * sliceAngle - sliceAngle / 2);
-
-  currentRotation += rotateTo;
-
-  wheel.style.transform = `rotate(${currentRotation}deg)`;
-
-  setTimeout(() => {
-    showResult(items[randomIndex]);
-  }, 3000);
+    /* 텍스트 */
+    ctx.save();
+    ctx.translate(center,center);
+    ctx.rotate(start + arc/2);
+    ctx.fillStyle="#333";
+    ctx.font="bold 15px Arial";
+    ctx.fillText(items[i],90,5);
+    ctx.restore();
+  }
 }
 
-function showResult(text) {
-  document.getElementById("result").innerText = text;
-  document.getElementById("popup").style.display = "block";
+/* 애니 */
+function animate(){
+  if(spinning){
+    angle+=speed;
+    draw();
+    requestAnimationFrame(animate);
+  }
 }
 
-function closePopup() {
-  document.getElementById("popup").style.display = "none";
+function startSpin(){
+  spinning=true;
+  speed=0.35;
+  resultIndex=null;
+  animate();
 }
+
+/* 🎯 중앙 정확 정렬 */
+function stopSpin(){
+  spinning=false;
+
+  const arc=(2*Math.PI)/items.length;
+  const index=Math.floor(Math.random()*items.length);
+
+  resultIndex=index;
+
+  angle = (Math.PI*1.5) - (index*arc) - (arc/2);
+
+  draw();
+}
+
+/* 팝업 */
+function showResult(){
+  if(resultIndex===null) return;
+
+  const name = items[resultIndex];
+
+  document.getElementById("title").innerText=name;
+  document.getElementById("desc").innerText=desc[name];
+
+  document.getElementById("popup").style.display="flex";
+}
+
+function closePopup(){
+  document.getElementById("popup").style.display="none";
+}
+
+draw();
 </script>
 
 </body>
