@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>우리 가족 시상식</title>
 
 <style>
@@ -13,8 +13,9 @@ body{
   background: linear-gradient(135deg,#ffe5ec,#e0f7fa,#fff1e6,#e5ffe5);
 }
 
-h1{ margin-top:20px; font-size:30px; }
+h1{ margin-top:20px; }
 
+/* 🔻 화살표 */
 .pointer{
   width:0;height:0;
   border-left:18px solid transparent;
@@ -23,36 +24,27 @@ h1{ margin-top:20px; font-size:30px; }
   margin:10px auto;
 }
 
+/* 컨테이너 */
 .container{
   position:relative;
-  width:340px;height:340px;
+  width:360px;
+  height:360px;
   margin:20px auto;
 }
 
-#wheel{
-  width:100%;height:100%;
-  border-radius:50%;
-}
-
-.center-flower{
-  position:absolute;
-  width:80px;height:80px;
-  background:#fff;
-  border-radius:50%;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  box-shadow:0 0 10px rgba(0,0,0,0.2);
+canvas{
+  width:100%;
+  height:100%;
 }
 
 /* 버튼 */
 button{
-  padding:12px 20px;
-  margin:8px;
+  padding:12px 18px;
+  margin:6px;
   border:none;
   border-radius:12px;
-  font-size:15px;
   background:#ff6b81;
-  color:white;
+  color:#fff;
   cursor:pointer;
 }
 button:hover{ background:#ff4757; }
@@ -68,11 +60,21 @@ button:hover{ background:#ff4757; }
   align-items:center;
 }
 
-.popup-content{
+.popup-box{
   background:white;
   padding:25px;
   border-radius:20px;
   width:260px;
+  position:relative;
+}
+
+/* ❌ 닫기 버튼 */
+.close{
+  position:absolute;
+  right:10px;
+  top:5px;
+  cursor:pointer;
+  font-size:18px;
 }
 </style>
 </head>
@@ -84,16 +86,17 @@ button:hover{ background:#ff4757; }
 <div class="pointer"></div>
 
 <div class="container">
-  <canvas id="wheel" width="340" height="340"></canvas>
-  <div class="center-flower">🌸</div>
+  <canvas id="wheel" width="360" height="360"></canvas>
 </div>
 
 <button onclick="startSpin()">시작</button>
 <button onclick="stopSpin()">멈춤</button>
 <button onclick="showResult()">내용</button>
 
-<div class="popup" id="popup" onclick="closePopup()">
-  <div class="popup-content">
+<!-- 팝업 -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <div class="close" onclick="closePopup()">✖</div>
     <h2 id="title"></h2>
     <p id="desc"></p>
   </div>
@@ -129,31 +132,46 @@ let spinning=false;
 let speed=0;
 let resultIndex=null;
 
-/* ✅ 이미 나온 결과 저장 */
-let used = [];
+const center=180;
+const radius=140;
 
-/* 그리기 */
+/* 🌸 꽃잎 모양 */
 function draw(){
   const arc = (2*Math.PI)/items.length;
-  ctx.clearRect(0,0,340,340);
+  ctx.clearRect(0,0,360,360);
 
   for(let i=0;i<items.length;i++){
     const start = angle + i*arc;
+    const end = start + arc;
 
     ctx.beginPath();
+
+    // 꽃잎 (바깥쪽 둥글게 튀어나오게)
+    const mid = (start+end)/2;
+    const r1 = radius;
+    const r2 = radius + 25;
+
+    ctx.moveTo(center,center);
+    ctx.arc(center,center,r1,start,end);
+    ctx.quadraticCurveTo(
+      center + Math.cos(mid)*r2,
+      center + Math.sin(mid)*r2,
+      center + Math.cos(start)*r1,
+      center + Math.sin(start)*r1
+    );
+
     ctx.fillStyle = colors[i];
-    ctx.moveTo(170,170);
-    ctx.arc(170,170,170,start,start+arc);
     ctx.fill();
 
     ctx.strokeStyle="#fff";
     ctx.stroke();
 
+    // 텍스트
     ctx.save();
-    ctx.translate(170,170);
-    ctx.rotate(start+arc/2);
+    ctx.translate(center,center);
+    ctx.rotate(start + arc/2);
     ctx.fillStyle="#333";
-    ctx.font="bold 16px Arial";
+    ctx.font="bold 15px Arial";
     ctx.fillText(items[i],80,5);
     ctx.restore();
   }
@@ -163,49 +181,41 @@ function draw(){
 function animate(){
   if(spinning){
     angle+=speed;
-    angle%=2*Math.PI;
     draw();
     requestAnimationFrame(animate);
   }
 }
 
-/* 시작 */
 function startSpin(){
-  if(used.length === items.length){
-    alert("🎉 모든 상이 나왔어요! 다시 시작합니다.");
-    used = [];
-  }
   spinning=true;
   speed=0.35;
   resultIndex=null;
   animate();
 }
 
-/* 멈춤 */
+/* 🎯 정확히 중앙에 멈춤 */
 function stopSpin(){
   spinning=false;
 
-  const available = items.map((_,i)=>i).filter(i=>!used.includes(i));
+  const arc=(2*Math.PI)/items.length;
+  const index=Math.floor(Math.random()*items.length);
 
-  const randomIndex = available[Math.floor(Math.random()*available.length)];
+  resultIndex=index;
 
-  resultIndex = randomIndex;
-  used.push(randomIndex);
-
-  const arc = (2*Math.PI)/items.length;
-  angle = (2*Math.PI) - (randomIndex * arc) - arc/2;
+  angle = (Math.PI*1.5) - (index*arc) - (arc/2);
 
   draw();
 }
 
-/* 내용 */
+/* 팝업 */
 function showResult(){
   if(resultIndex===null) return;
 
-  const result = items[resultIndex];
+  const name = items[resultIndex];
 
-  document.getElementById("title").innerText=result;
-  document.getElementById("desc").innerText=desc[result];
+  document.getElementById("title").innerText=name;
+  document.getElementById("desc").innerText=desc[name];
+
   document.getElementById("popup").style.display="flex";
 }
 
