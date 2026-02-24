@@ -24,7 +24,7 @@ h1{ margin-top:20px; }
   margin:10px auto;
 }
 
-/* 컨테이너 */
+/* 룰렛 */
 .container{
   position:relative;
   width:360px;
@@ -35,6 +35,8 @@ h1{ margin-top:20px; }
 canvas{
   width:100%;
   height:100%;
+  border-radius:50%;
+  box-shadow:0 0 15px rgba(0,0,0,0.2);
 }
 
 /* 버튼 */
@@ -68,7 +70,7 @@ button:hover{ background:#ff4757; }
   position:relative;
 }
 
-/* ❌ 닫기 버튼 */
+/* ❌ 닫기 */
 .close{
   position:absolute;
   right:10px;
@@ -133,46 +135,32 @@ let speed=0;
 let resultIndex=null;
 
 const center=180;
-const radius=140;
+const radius=160;
 
-/* 🌸 꽃잎 모양 */
+/* 🎯 원형 룰렛 */
 function draw(){
   const arc = (2*Math.PI)/items.length;
   ctx.clearRect(0,0,360,360);
 
   for(let i=0;i<items.length;i++){
     const start = angle + i*arc;
-    const end = start + arc;
 
     ctx.beginPath();
-
-    // 꽃잎 (바깥쪽 둥글게 튀어나오게)
-    const mid = (start+end)/2;
-    const r1 = radius;
-    const r2 = radius + 25;
-
     ctx.moveTo(center,center);
-    ctx.arc(center,center,r1,start,end);
-    ctx.quadraticCurveTo(
-      center + Math.cos(mid)*r2,
-      center + Math.sin(mid)*r2,
-      center + Math.cos(start)*r1,
-      center + Math.sin(start)*r1
-    );
-
+    ctx.arc(center,center,radius,start,start+arc);
     ctx.fillStyle = colors[i];
     ctx.fill();
 
     ctx.strokeStyle="#fff";
     ctx.stroke();
 
-    // 텍스트
+    /* 텍스트 */
     ctx.save();
     ctx.translate(center,center);
     ctx.rotate(start + arc/2);
     ctx.fillStyle="#333";
     ctx.font="bold 15px Arial";
-    ctx.fillText(items[i],80,5);
+    ctx.fillText(items[i],90,5);
     ctx.restore();
   }
 }
@@ -193,7 +181,7 @@ function startSpin(){
   animate();
 }
 
-/* 🎯 정확히 중앙에 멈춤 */
+/* 🎯 중앙 정확 정렬 */
 function stopSpin(){
   spinning=false;
 
