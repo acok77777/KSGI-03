@@ -1,96 +1,200 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>3월 나의 행복 도전 🌸</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>우리 가족 시상식</title>
 
 <style>
-body{
-  font-family: sans-serif;
-  background:#fffafc;
+body {
   margin:0;
-  padding:20px;
+  font-family: "Arial", sans-serif;
   text-align:center;
+  background:#fff8f5;
 }
-h1{
-  color:#ff6f91;
-}
-.card{
-  background:white;
-  border-radius:20px;
-  padding:20px;
+
+/* 제목 */
+h1 {
   margin-top:20px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  font-size:28px;
 }
-button{
-  display:block;
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border:none;
-  border-radius:12px;
-  background:#ffe3ec;
+
+/* 화살표 */
+.pointer {
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 25px solid #ff4d6d;
+  margin: 10px auto;
+}
+
+/* 룰렛 */
+.wheel-container {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  margin: 20px auto;
+}
+
+#wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 8px solid #ffcad4;
+  transition: transform 0.2s linear;
+}
+
+/* 버튼 */
+.buttons {
+  margin-top:20px;
+}
+
+button {
+  padding:12px 20px;
   font-size:16px;
-}
-button:hover{
-  background:#ffccd5;
-}
-.hidden{
-  display:none;
-}
-textarea{
-  width:100%;
+  margin:10px;
+  border:none;
   border-radius:10px;
-  padding:10px;
-  margin-top:10px;
+  background:#ff4d6d;
+  color:white;
+  cursor:pointer;
+}
+
+button:hover {
+  background:#e63956;
+}
+
+/* 팝업 */
+.popup {
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.5);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-content {
+  background:white;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+  width:250px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🌸 3월 나의 행복 도전</h1>
+<h1>&lt; 우리 가족 시상식 &gt;</h1>
 
-<div class="card" id="step1">
-  <h3>지금 나의 상태는?</h3>
-  <button onclick="nextStep()">😴 많이 지쳐있어요</button>
-  <button onclick="nextStep()">😐 무난해요</button>
-  <button onclick="nextStep()">🌱 변화를 주고 싶어요</button>
-  <button onclick="nextStep()">🔥 시작하고 싶어요</button>
+<div class="pointer"></div>
+
+<div class="wheel-container">
+  <canvas id="wheel" width="300" height="300"></canvas>
 </div>
 
-<div class="card hidden" id="step2">
-  <h3>카테고리를 선택해주세요</h3>
-  <button onclick="showChallenge('건강')">🏃 건강</button>
-  <button onclick="showChallenge('신심')">🙏 신심</button>
-  <button onclick="showChallenge('공부')">📚 공부</button>
-  <button onclick="showChallenge('재정')">💰 재정</button>
-  <button onclick="showChallenge('마음')">🧠 마음</button>
-  <button onclick="showChallenge('관계')">👥 관계</button>
-  <button onclick="showChallenge('자기계발')">🎨 자기계발</button>
+<div class="buttons">
+  <button onclick="startSpin()">시작</button>
+  <button onclick="stopSpin()">멈춤</button>
 </div>
 
-<div class="card hidden" id="step3">
-  <h3 id="challengeTitle"></h3>
-  <p>👉 나의 도전은?</p>
-  <textarea rows="2" placeholder="예: 매일 10분 걷기"></textarea>
-
-  <p>👉 어떻게 실천할까요?</p>
-  <textarea rows="3" placeholder="예: 아침에 일어나서 집 앞 산책"></textarea>
+<div class="popup" id="popup" onclick="closePopup()">
+  <div class="popup-content">
+    <h2 id="awardTitle"></h2>
+    <p id="awardDesc"></p>
+  </div>
 </div>
 
 <script>
-function nextStep(){
-  document.getElementById('step1').classList.add('hidden');
-  document.getElementById('step2').classList.remove('hidden');
+const canvas = document.getElementById("wheel");
+const ctx = canvas.getContext("2d");
+
+const items = [
+  "상상이상",
+  "언제나 웃상",
+  "투머치 토커상",
+  "든든한 버팀모상",
+  "두쫀쿠상"
+];
+
+const descriptions = {
+  "상상이상": "특이한 재능을 가진 가족에게 드리는 상",
+  "언제나 웃상": "항상 웃음을 주는 가족에게 드리는 상",
+  "투머치 토커상": "말이 많은 매력의 소유자에게 드리는 상",
+  "든든한 버팀모상": "가족을 지켜주는 든든한 존재에게 드리는 상",
+  "두쫀쿠상": "귀엽고 특별한 매력을 가진 가족에게 드리는 상"
+};
+
+let angle = 0;
+let spinning = false;
+let speed = 0;
+
+/* 룰렛 그리기 */
+function drawWheel() {
+  const arc = (2 * Math.PI) / items.length;
+
+  for (let i = 0; i < items.length; i++) {
+    const start = angle + i * arc;
+    ctx.beginPath();
+    ctx.fillStyle = i % 2 === 0 ? "#ffccd5" : "#bde0fe";
+    ctx.moveTo(150,150);
+    ctx.arc(150,150,150,start,start+arc);
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(150,150);
+    ctx.rotate(start + arc / 2);
+    ctx.fillStyle = "#333";
+    ctx.font = "14px Arial";
+    ctx.fillText(items[i], 60, 5);
+    ctx.restore();
+  }
 }
 
-function showChallenge(category){
-  document.getElementById('step2').classList.add('hidden');
-  document.getElementById('step3').classList.remove('hidden');
-  document.getElementById('challengeTitle').innerText = "선택한 카테고리: " + category;
+/* 애니메이션 */
+function animate() {
+  if (spinning) {
+    angle += speed;
+    angle %= (2 * Math.PI);
+    drawWheel();
+    requestAnimationFrame(animate);
+  }
 }
+
+/* 시작 */
+function startSpin() {
+  spinning = true;
+  speed = 0.3;
+  animate();
+}
+
+/* 멈춤 */
+function stopSpin() {
+  spinning = false;
+
+  const arc = (2 * Math.PI) / items.length;
+  const index = Math.floor(((2 * Math.PI - angle) % (2 * Math.PI)) / arc);
+
+  const result = items[index];
+  showPopup(result);
+}
+
+/* 팝업 */
+function showPopup(result) {
+  document.getElementById("awardTitle").innerText = result;
+  document.getElementById("awardDesc").innerText = descriptions[result];
+  document.getElementById("popup").style.display = "flex";
+}
+
+function closePopup() {
+  document.getElementById("popup").style.display = "none";
+}
+
+/* 최초 그리기 */
+drawWheel();
 </script>
 
 </body>
