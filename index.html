@@ -8,34 +8,48 @@
 <style>
 body{
   margin:0;
-  font-family: "Arial", sans-serif;
+  font-family: Arial;
   text-align:center;
   background:#f8f8f8;
 }
 
 /* 제목 */
 h1{
-  margin-top:40px;
-  font-size:40px;
+  margin-top:20px;
+  font-size:32px;
 }
 
-/* 트로피 컨테이너 */
+/* 전체화면 버튼 */
+.full-btn{
+  position:fixed;
+  top:10px;
+  right:10px;
+  padding:8px 12px;
+  background:black;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* 컨테이너 */
 .container{
-  margin-top:50px;
+  margin-top:30px;
   display:flex;
   flex-direction:column;
+  gap:30px;
   align-items:center;
-  gap:40px;
 }
 
 /* 줄 */
 .row{
   display:flex;
-  gap:60px;
+  gap:25px;
 }
 
 /* 트로피 */
 .trophy{
+  position:relative;
   cursor:pointer;
   transition:0.3s;
 }
@@ -46,14 +60,31 @@ h1{
 
 /* 이모티콘 */
 .icon{
-  font-size:80px;
+  font-size:70px;
 }
 
-/* 텍스트 */
+/* 중앙 텍스트 */
 .label{
-  margin-top:-55px;
-  font-size:18px;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  font-size:16px;
   font-weight:bold;
+  pointer-events:none;
+}
+
+/* 모바일 */
+@media (max-width:600px){
+  .row{
+    gap:15px;
+  }
+  .icon{
+    font-size:55px;
+  }
+  .label{
+    font-size:13px;
+  }
 }
 
 </style>
@@ -61,11 +92,12 @@ h1{
 
 <body>
 
+<button class="full-btn" onclick="goFull()">전체화면</button>
+
 <h1>🌷 나에게 주는 선물 🌷</h1>
 
 <div class="container">
 
-  <!-- 위 줄 -->
   <div class="row">
     <div class="trophy" onclick="openPage('건강')">
       <div class="icon">🏆</div>
@@ -88,7 +120,6 @@ h1{
     </div>
   </div>
 
-  <!-- 아래 줄 -->
   <div class="row">
     <div class="trophy" onclick="openPage('자유')">
       <div class="icon">🏆</div>
@@ -114,6 +145,16 @@ h1{
 </div>
 
 <script>
+/* 전체화면 */
+function goFull(){
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+/* 팝업 */
 function openPage(text){
 
   let newWindow = window.open("", "_blank");
@@ -121,7 +162,7 @@ function openPage(text){
   newWindow.document.write(`
     <html>
     <head>
-      <title>${text}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
       <style>
         body{
           margin:0;
@@ -136,16 +177,23 @@ function openPage(text){
         }
 
         h2{
-          font-size:32px;
-          margin-bottom:30px;
+          font-size:28px;
+          margin-bottom:20px;
         }
 
         .trophy{
+          position:relative;
+        }
+
+        .icon{
           font-size:150px;
         }
 
         .label{
-          margin-top:-100px;
+          position:absolute;
+          top:50%;
+          left:50%;
+          transform:translate(-50%,-50%);
           font-size:28px;
           font-weight:bold;
         }
@@ -154,13 +202,13 @@ function openPage(text){
 
     <body>
       <h2>나에게 ${text}을(를) 선물합니다</h2>
-      <div class="trophy">🏆</div>
-      <div class="label">${text}</div>
+      <div class="trophy">
+        <div class="icon">🏆</div>
+        <div class="label">${text}</div>
+      </div>
     </body>
-
     </html>
   `);
-
 }
 </script>
 
