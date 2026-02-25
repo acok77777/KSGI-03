@@ -3,219 +3,165 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>우리 가족 시상식</title>
+<title>🌷 나에게 주는 선물 🌷</title>
 
 <style>
 body{
   margin:0;
-  font-family: Arial;
+  font-family: "Arial", sans-serif;
   text-align:center;
-  background: linear-gradient(135deg,#ffe5ec,#e0f7fa,#fff1e6,#e5ffe5);
+  background:#f8f8f8;
 }
 
-h1{ margin-top:20px; }
-
-/* 🔥 화살표 (딱 붙이기) */
-.pointer{
-  width:0;height:0;
-  border-left:18px solid transparent;
-  border-right:18px solid transparent;
-  border-top:28px solid #ff4d6d;
-  margin:0 auto -8px;
-  position:relative;
-  z-index:10;
+/* 제목 */
+h1{
+  margin-top:40px;
+  font-size:40px;
 }
 
-/* 룰렛 */
+/* 트로피 컨테이너 */
 .container{
-  position:relative;
-  width:360px;
-  height:360px;
-  margin:0 auto 20px;
-}
-
-canvas{
-  width:100%;
-  height:100%;
-  border-radius:50%;
-}
-
-/* 버튼 */
-button{
-  padding:12px 18px;
-  margin:6px;
-  border:none;
-  border-radius:12px;
-  background:#ff6b81;
-  color:#fff;
-  cursor:pointer;
-}
-button:hover{ background:#ff4757; }
-
-/* 팝업 */
-.popup{
-  position:fixed;
-  top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,0.4);
-  display:none;
-  justify-content:center;
+  margin-top:50px;
+  display:flex;
+  flex-direction:column;
   align-items:center;
+  gap:40px;
 }
 
-.popup-box{
-  background:white;
-  padding:25px;
-  border-radius:20px;
-  width:260px;
-  position:relative;
+/* 줄 */
+.row{
+  display:flex;
+  gap:60px;
 }
 
-.close{
-  position:absolute;
-  right:10px;
-  top:5px;
+/* 트로피 */
+.trophy{
   cursor:pointer;
-  font-size:18px;
+  transition:0.3s;
 }
+
+.trophy:hover{
+  transform:scale(1.1);
+}
+
+/* 이모티콘 */
+.icon{
+  font-size:80px;
+}
+
+/* 텍스트 */
+.label{
+  margin-top:-55px;
+  font-size:18px;
+  font-weight:bold;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>🏆 우리 가족 시상식 🏆</h1>
-
-<div class="pointer"></div>
+<h1>🌷 나에게 주는 선물 🌷</h1>
 
 <div class="container">
-  <canvas id="wheel" width="360" height="360"></canvas>
-</div>
 
-<button onclick="startSpin()">시작</button>
-<button onclick="stopSpin()">멈춤</button>
-<button onclick="showResult()">내용</button>
+  <!-- 위 줄 -->
+  <div class="row">
+    <div class="trophy" onclick="openPage('건강')">
+      <div class="icon">🏆</div>
+      <div class="label">건강</div>
+    </div>
 
-<div class="popup" id="popup">
-  <div class="popup-box">
-    <div class="close" onclick="closePopup()">✖</div>
-    <h2 id="title"></h2>
-    <p id="desc"></p>
+    <div class="trophy" onclick="openPage('사랑')">
+      <div class="icon">🏆</div>
+      <div class="label">사랑</div>
+    </div>
+
+    <div class="trophy" onclick="openPage('격려')">
+      <div class="icon">🏆</div>
+      <div class="label">격려</div>
+    </div>
+
+    <div class="trophy" onclick="openPage('휴식')">
+      <div class="icon">🏆</div>
+      <div class="label">휴식</div>
+    </div>
   </div>
+
+  <!-- 아래 줄 -->
+  <div class="row">
+    <div class="trophy" onclick="openPage('자유')">
+      <div class="icon">🏆</div>
+      <div class="label">자유</div>
+    </div>
+
+    <div class="trophy" onclick="openPage('감사')">
+      <div class="icon">🏆</div>
+      <div class="label">감사</div>
+    </div>
+
+    <div class="trophy" onclick="openPage('용기')">
+      <div class="icon">🏆</div>
+      <div class="label">용기</div>
+    </div>
+
+    <div class="trophy" onclick="openPage('희망')">
+      <div class="icon">🏆</div>
+      <div class="label">희망</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-const canvas = document.getElementById("wheel");
-const ctx = canvas.getContext("2d");
+function openPage(text){
 
-const items = [
-"상상이상","언제나 웃상","24시간 방송 상","든든한 버팀목상",
-"고마워서 눈물상","사랑 듬뿍상","우리집 햇살상",
-"말없이 지켜준 상","다시 태어나도 상","무한 방패상"
-];
+  let newWindow = window.open("", "_blank");
 
-const desc = {
-"상상이상":"남들과 다른 재능과 기발한 생각으로 가족을 놀라게 하는 사람에게 드리는 상",
-"언제나 웃상":"언제 어디서나 밝은 웃음으로 가족의 분위기를 따뜻하게 만드는 사람에게 드리는 상",
-"24시간 방송 상":"끊임없는 이야기와 수다로 집안을 활기차게 만드는 사람에게 드리는 상",
-"든든한 버팀목상":"힘들 때 항상 옆에서 지켜주고 가족의 중심이 되어주는 사람에게 드리는 상",
-"고마워서 눈물상":"평소엔 표현 못 했지만 가장 고맙고 가장 소중한 사람에게 드리는 상",
-"사랑 듬뿍상":"표현은 서툴러도 누구보다 가족을 깊이 사랑하는 마음을 가진 사람에게 드리는 상",
-"우리집 햇살상":"존재만으로도 가족의 하루를 밝게 만들어주는 사람에게 드리는 상",
-"말없이 지켜준 상":"티내지 않지만 항상 뒤에서 가족을 지켜준 사람에게 드리는 상",
-"다시 태어나도 상":"다시 태어나도 꼭 우리 가족으로 만나고 싶은 사람에게 드리는 상",
-"무한 방패상":"어떤 상황에서도 가족을 먼저 지켜주는 분께 드리는 상"
-};
+  newWindow.document.write(`
+    <html>
+    <head>
+      <title>${text}</title>
+      <style>
+        body{
+          margin:0;
+          display:flex;
+          flex-direction:column;
+          justify-content:center;
+          align-items:center;
+          height:100vh;
+          background:linear-gradient(135deg,#ffe5ec,#e0f7fa,#fff1e6,#e5ffe5);
+          font-family:Arial;
+          text-align:center;
+        }
 
-const colors = ["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff","#ffc6ff","#fffffc","#d8f3dc"];
+        h2{
+          font-size:32px;
+          margin-bottom:30px;
+        }
 
-let angle=0;
-let spinning=false;
-let speed=0;
-let resultIndex=null;
+        .trophy{
+          font-size:150px;
+        }
 
-let history = [];
+        .label{
+          margin-top:-100px;
+          font-size:28px;
+          font-weight:bold;
+        }
+      </style>
+    </head>
 
-const center=180;
-const radius=160;
+    <body>
+      <h2>나에게 ${text}을(를) 선물합니다</h2>
+      <div class="trophy">🏆</div>
+      <div class="label">${text}</div>
+    </body>
 
-function draw(){
-  const arc = (2*Math.PI)/items.length;
-  ctx.clearRect(0,0,360,360);
+    </html>
+  `);
 
-  for(let i=0;i<items.length;i++){
-    const start = angle + i*arc;
-
-    ctx.beginPath();
-    ctx.moveTo(center,center);
-    ctx.arc(center,center,radius,start,start+arc);
-    ctx.fillStyle = colors[i];
-    ctx.fill();
-
-    ctx.save();
-    ctx.translate(center,center);
-    ctx.rotate(start + arc/2);
-    ctx.fillStyle="#333";
-    ctx.font="bold 13px Arial";
-    ctx.textAlign="center";
-    ctx.textBaseline="middle";
-    ctx.fillText(items[i], radius * 0.55, 0);
-    ctx.restore();
-  }
 }
-
-function animate(){
-  if(spinning){
-    angle+=speed;
-    draw();
-    requestAnimationFrame(animate);
-  }
-}
-
-function startSpin(){
-  spinning=true;
-  speed=0.35;
-  resultIndex=null;
-  animate();
-}
-
-function stopSpin(){
-  spinning=false;
-
-  const arc=(2*Math.PI)/items.length;
-
-  let available = items.map((_,i)=>i).filter(i=>!history.includes(i));
-
-  if(available.length===0){
-    history=[];
-    available = items.map((_,i)=>i);
-  }
-
-  const index = available[Math.floor(Math.random()*available.length)];
-  history.push(index);
-
-  resultIndex=index;
-
-  angle = (Math.PI * 1.5) - (index * arc) - (arc / 2);
-
-  draw();
-}
-
-function showResult(){
-  if(resultIndex===null) return;
-
-  const name = items[resultIndex];
-
-  document.getElementById("title").innerText=name;
-  document.getElementById("desc").innerText=desc[name];
-
-  document.getElementById("popup").style.display="flex";
-}
-
-function closePopup(){
-  document.getElementById("popup").style.display="none";
-}
-
-draw();
 </script>
 
 </body>
